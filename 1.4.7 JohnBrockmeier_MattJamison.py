@@ -1,9 +1,47 @@
 import PIL
 import os.path  
 import PIL.ImageDraw 
-      
+import matplotlib.pyplot as plt      
 
-logo_large = PIL.Image.open('test_image.jpg')
+logo_raw = PIL.Image.open('test_image.jpg')
+def round_corners():
+    """ Rounds the corner of a PIL.Image
+
+    original_image must be a PIL.Image
+    Returns a new PIL.Image with rounded corners, where
+    0 < percent_of_side < 1 is the corner radius as 
+    portion of shorter dimension of original_image
+    """
+    #set the radius of the rounded corners
+    width, height = logo_raw.size
+    radius = int(min(width/2, height/2)) #radius in pixels
+
+    ###
+    #create a mask
+    ###
+
+    #start with transparent mask
+    rounded_mask = PIL.Image.new('RGBA', (width, height), (127,0,127,0))
+    drawing_layer = PIL.ImageDraw.Draw(rounded_mask)
+
+    # Overwrite the RGBA values with A=255.
+    # The 127 for RGB values was used merely for visualizing the mask
+
+    # Draw two rectangles to fill interior with opaqueness 
+
+
+    #Draw four filled circles of opaqueness
+    drawing_layer.ellipse((250,500, 1000, 1000), 
+                          fill=(0,127,127,255)) #top left
+
+
+    # Uncomment the following line to show the mask
+    plt.imshow(rounded_mask)
+
+    # Make the new image, starting with all transparent
+    logo_large = PIL.Image.new('RGBA', logo_raw.size, (0,0,0,0))
+    logo_large.paste(logo_raw, (0,0), mask=rounded_mask)
+    return logo_large
 def frame_image(image, wide = 50):
 
     width, height = image.size
