@@ -1,35 +1,64 @@
 import PIL
-import matplotlib.pyplot as plt
 import os.path  
-import PIL.ImageDraw    
-import numpy as np        
+import PIL.ImageDraw 
+import matplotlib.pyplot as plt      
 
-logo = PIL.Image.open('test_image.jpg')
-def frame_image(original_image, wide = 50):
-    width, height = original_image.size
+logo_raw = PIL.Image.open('test_image.jpg')
+def round_corners():
+    """ Rounds the corner of a PIL.Image
+
+    original_image must be a PIL.Image
+    Returns a new PIL.Image with rounded corners, where
+    0 < percent_of_side < 1 is the corner radius as 
+    portion of shorter dimension of original_image
+    """
+    #set the radius of the rounded corners
+    width, height = logo_raw.size
+    radius = int(min(width/2, height/2)) #radius in pixels
+
+    ###
+    #create a mask
+    ###
+
+    #start with transparent mask
+    rounded_mask = PIL.Image.new('RGBA', (width, height), (127,0,127,0))
+    drawing_layer = PIL.ImageDraw.Draw(rounded_mask)
+
+    # Overwrite the RGBA values with A=255.
+    # The 127 for RGB values was used merely for visualizing the mask
+
+    # Draw two rectangles to fill interior with opaqueness 
+
+
+    #Draw four filled circles of opaqueness
+    drawing_layer.ellipse((250,500, 1000, 1000), 
+                          fill=(0,127,127,255)) #top left
+
+
+    # Uncomment the following line to show the mask
+    plt.imshow(rounded_mask)
+
+    # Make the new image, starting with all transparent
+    logo_large = PIL.Image.new('RGBA', logo_raw.size, (0,0,0,0))
+    logo_large.paste(logo_raw, (0,0), mask=rounded_mask)
+    return logo_large
+def frame_image(image, wide = 50):
+
+    width, height = image.size
     frame_width = width + 2*wide
     frame_height = height + 2*wide 
-    frame_mask = PIL.Image.new('RGBA', (frame_width, frame_height))
-    image = np.array(frame_mask)
-    for frame_width in range(frame_width):
-        for frame_heigth in range(frame_height):
-            if (frame_width+frame_height)/5 % 2 == 0: 
-                #(r+c)/w says how many stripes above/below line y=x
-                # The % 2 says whether it is an even or odd stripe
-                
-                # Even stripe
-                image[frame_width][frame_height] = [127, 255, 127, 255] # pale red, alpha=0
-            elif (frame_width-frame_height)/5 %2 ==0:
-                image[frame_width][frame_height] = [15, 255, 255, 255]
-            else:
-                # Odd stripe
-                image[frame_width][frame_height] = [0, 255, 255, 0] # magenta, alpha=255
-    frame_mask.paste(original_image, ((frame_width-width)/2,(frame_height-height)/2))
+    frame_large = PIL.Image.open('background.jpg')
+    frame_mask = frame_large.resize((frame_width,frame_height))
+    frame_mask.paste(image, ((frame_width-width)/2,(frame_height-height)/2))
     return frame_mask 
 
 def logo_place(image, side):
+    ''' 
+    This function will place a predetermined logo in a specified corner of the image, or in the middle.
+    Use middle or upper/lower then left/right to set location of logo on the image.
+    '''
     image_width, image_height = image.size
-    logo.resize((int(image_width * .125), int(image_height *.125)))
+    logo = logo_large.resize((int(image_width * .125), int(image_height *.125)))
     border_spacing = 0.1
     if side == 'upper right' or 'upper left':
         logo_y = (image_height - (image_height * border_spacing))
@@ -62,7 +91,7 @@ def get_images(directory=None):
          except IOError:
              pass 
     return image_list, file_list
-        
+     
 
 def set_logo(side, directory=None):
     if directory == None:
@@ -87,46 +116,24 @@ def test():
     saved as a .png
     '''
     for a in range(1):
-        directory = os.getcwd()
-        #set_logo('left')
-
-    directory = os.getcwd()
-    set_logo('left')
-    image_directory = os.path.join(directory, 'modified')
-    if os.path.exists(os.path.join(directory, 'modified')) == True:
-        print 'Directory exists, No images created'
-        image_directory = os.path.join(directory, 'modified')
-    elif os.path.exists(os.path.join(image_directory, 'test_image.png')) == True:
-        print 'Image created, Test Passed'
-    else:
-        print 'Test Failed'
-    try:
-        os.remove(image_directory)
-    except OSError:
-        pass
-
-         
-def logo_place(image, side): #Places the logo onto specified corner of an image
-    ''' 
-    This function will place a predetermined logo in a specified corner of the image, or in the middle.
-    Use middle or upper/lower then left/right to set location of logo on the image.
-    ''' 
-    image_width, image_height = image.size
-    logo.resize(image_width * .125, image_height *.125)
-    border_spacing = 0.1
-    if side == 'upper right' or 'upper left': # check to see where user wants logo
-        logo_y = (image_height - (image_height * border_spacing))
-        if side == 'upper right':
-            logo_x = (image_width - (image_width * border_spacing))
+        if a == 'background.jpg':
+            pass
         else:
-            logo_x = image_width * border_spacing
-    else:
-        logo_y = image_height * border_spacing
-        if side == 'lower right':
-            logo_x = (image_width - (image_width * border_spacing))
-        else:
-            logo_x = image_width * border_spacing
-    # paste image according to conditions inputed by user and computed by program
-    image.paste(logo, (logo_x, logo_y))
-    return image 
-  
+            
+            directory = os.getcwd()
+            #set_logo('left')
+
+            directory = os.getcwd()
+            set_logo('lower right')
+            image_directory = os.path.join(directory, 'modified')
+            if os.path.exists(os.path.join(directory, 'modified')) == True:
+                print 'Directory exists, No images created'
+                image_directory = os.path.join(directory, 'modified')
+            elif os.path.exists(os.path.join(image_directory, 'test_image.png')) == True:
+                print 'Image created, Test Passed'
+            else:
+                print 'Test Failed'
+            try:
+                os.remove(image_directory)
+            except OSError:
+                pass  
