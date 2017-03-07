@@ -39,13 +39,13 @@ def logo_place(image, side):
     logo = logo_large.resize((logo_size,logo_size))
     border_spacing = .2
     if side == 'upper right' or 'upper left':
-        logo_y = (image_height - (image_height * border_spacing))
+        logo_y = image_height * border_spacing
         if side == 'upper right':
             logo_x = (image_width - (image_width * border_spacing))
         else:
             logo_x = image_width * border_spacing
-    else:
-        logo_y = image_height * border_spacing
+    elif side == 'lower right' or 'lower left':
+        logo_y = (image_height - (image_height * border_spacing))
         if side == 'lower right':
             logo_x = (image_width - (image_width * border_spacing))
         else:
